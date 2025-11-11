@@ -28,15 +28,8 @@ export function AudioProvider({ children }: { children: ReactNode }) {
     if (!audioRef.current) {
       audioRef.current = new Audio(STREAM_URL);
       audioRef.current.volume = volume / 100;
+      audioRef.current.preload = 'none';
     }
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = '';
-        audioRef.current = null;
-      }
-    };
   }, []);
 
   useEffect(() => {

@@ -1,4 +1,4 @@
-import { createContext, useContext, useRef, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface AudioContextType {
   isPlaying: boolean;
@@ -19,36 +19,37 @@ export const useAudio = () => {
 
 const STREAM_URL = 'https://myradio24.org/40350';
 
+let globalAudio: HTMLAudioElement | null = null;
+
+const getAudio = () => {
+  if (!globalAudio) {
+    globalAudio = new Audio(STREAM_URL);
+    globalAudio.preload = 'none';
+  }
+  return globalAudio;
+};
+
 export function AudioProvider({ children }: { children: ReactNode }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolumeState] = useState(70);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio(STREAM_URL);
-      audioRef.current.volume = volume / 100;
-      audioRef.current.preload = 'none';
-    }
-  }, []);
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume / 100;
-    }
+    const audio = getAudio();
+    audio.volume = volume / 100;
   }, [volume]);
 
   const togglePlay = () => {
-    if (!audioRef.current) return;
+    const audio = getAudio();
 
     if (isPlaying) {
-      audioRef.current.pause();
+      audio.pause();
+      setIsPlaying(false);
     } else {
-      audioRef.current.play().catch((error) => {
+      audio.play().catch((error) => {
         console.error('Playback error:', error);
       });
+      setIsPlaying(true);
     }
-    setIsPlaying(!isPlaying);
   };
 
   const setVolume = (newVolume: number) => {
